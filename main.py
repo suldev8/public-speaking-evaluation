@@ -9,22 +9,22 @@ import imutils
 import time
 from cv2 import cv2
 from keras.models import load_model
+from keras.preprocessing import image
 
 emotions = ('angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral')
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-p", "--prototxt", required=True,
-	help="path to Caffe 'deploy' prototxt file")
-ap.add_argument("-m", "--model", required=True,
-	help="path to Caffe pre-trained model")
+
 ap.add_argument("-c", "--confidence", type=float, default=0.5,
 	help="minimum probability to filter weak detections")
 args = vars(ap.parse_args())
 
 # load our serialized model from disk
 print("[INFO] loading model...")
-net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
-model =  load_model('output/facial-expression-model.hdf5')
+caffe_prototxt = 'models/face-detection/deploy.prototxt.txt'
+caffe_model = 'models/face-detection/res10_300x300_ssd_iter_140000.caffemodel'
+net = cv2.dnn.readNetFromCaffe(caffe_prototxt, caffe_model)
+model =  load_model('models/facial-expression/facial-expression-model.h5')
 
 # initialize the video stream and allow the cammera sensor to warmup
 print("[INFO] starting video stream...")
@@ -73,15 +73,22 @@ while True:
 		cv2.putText(frame, text, (startX, y),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
 	
-	blob /= 255
-	predictions = model.predict(blob)
-	emotion = ""
-	for i in range(len(predictions[0])):
-		emotion = "%s %s%s" % (emotions[i], round(predictions[0][i]*100, 2), '%')
-		"""if i != max_index:
-			color = (255,0,0)"""
-		color = (255,255,255)		
-		cv2.putText(frame, emotion, (startX,y+5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+	face = frame[startY:endY, startX:endX]
+	face = cv2.resize(face, (48,48))
+	face  = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+
+	face_pixels = image.img_to_array(face)
+	face_pixels = np.expand_dims(face_pixels, axis=0)
+	face_pixels /= 255
+	predictions = model.predict(face_pixels)
+	print("predict: ",predictions)
+	max_index = np.argmax(predictions[0])
+		
+	emotion = emotions[max_index]
+		
+	#write emotion text above rectangle
+	color = (255,255,255)
+	cv2.putText(frame, emotion, (startX,y+10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
 	# show the output frame
 	cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
@@ -92,3 +99,4 @@ while True:
 
 # do a bit of cleanup
 cv2.destroyAllWindows()
+vs.stop()
