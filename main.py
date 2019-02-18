@@ -1,10 +1,5 @@
-# USAGE
-# python detect_faces_video.py --prototxt deploy.prototxt.txt --model res10_300x300_ssd_iter_140000.caffemodel
-
-# import the necessary packages
 from imutils.video import VideoStream
 import numpy as np
-import argparse
 import imutils
 import time
 from cv2 import cv2
@@ -12,22 +7,17 @@ from keras.models import load_model
 from keras.preprocessing import image
 
 emotions = ('angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral')
-# construct the argument parse and parse the arguments
-ap = argparse.ArgumentParser()
-
-ap.add_argument("-c", "--confidence", type=float, default=0.5,
-	help="minimum probability to filter weak detections")
-args = vars(ap.parse_args())
+minimum_face_confidence = 0.6
 
 # load our serialized model from disk
-print("[INFO] loading model...")
+print("loading models...")
 caffe_prototxt = 'models/face-detection/deploy.prototxt.txt'
 caffe_model = 'models/face-detection/res10_300x300_ssd_iter_140000.caffemodel'
 net = cv2.dnn.readNetFromCaffe(caffe_prototxt, caffe_model)
 model =  load_model('models/facial-expression/facial-expression-model.h5')
 
 # initialize the video stream and allow the cammera sensor to warmup
-print("[INFO] starting video stream...")
+print("starting video stream...")
 vs = VideoStream(src=0).start()
 time.sleep(2.0)
 
@@ -48,15 +38,14 @@ while True:
 	net.setInput(blob)
 	detections = net.forward()
 
-	# loop over the detections
+	# loop over the face detections and facial expression
 	for i in range(0, detections.shape[2]):
-		# extract the confidence (i.e., probability) associated with the
-		# prediction
+
+		#get the confidence from face detection
 		confidence = detections[0, 0, i, 2]
 
-		# filter out weak detections by ensuring the `confidence` is
-		# greater than the minimum confidence
-		if confidence < args["confidence"]:
+		# skip weak face detection
+		if confidence < minimum_face_confidence:
 			continue
 
 		# compute the (x, y)-coordinates of the bounding box for the
@@ -73,22 +62,23 @@ while True:
 		cv2.putText(frame, text, (startX, y),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
 	
-	face = frame[startY:endY, startX:endX]
-	face = cv2.resize(face, (48,48))
-	face  = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
+		face = frame[startY:endY, startX:endX]
+		face = cv2.resize(face, (48,48))
+		face  = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
 
-	face_pixels = image.img_to_array(face)
-	face_pixels = np.expand_dims(face_pixels, axis=0)
-	face_pixels /= 255
-	predictions = model.predict(face_pixels)
-	print("predict: ",predictions)
-	max_index = np.argmax(predictions[0])
-		
-	emotion = emotions[max_index]
-		
-	#write emotion text above rectangle
-	color = (255,255,255)
-	cv2.putText(frame, emotion, (startX,y+10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+		face_pixels = image.img_to_array(face)
+		face_pixels = np.expand_dims(face_pixels, axis=0)
+		face_pixels /= 255
+		predictions = model.predict(face_pixels)
+		print("predict: ",predictions)
+		max_index = np.argmax(predictions[0])
+			
+		emotion = emotions[max_index]
+			
+		#write emotion text above rectangle
+		color = (255,255,255)
+		cv2.putText(frame, emotion, (startX,y+10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+	
 	# show the output frame
 	cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
@@ -97,6 +87,6 @@ while True:
 	if key == ord("q"):
 		break
 
-# do a bit of cleanup
+#close all windows
 cv2.destroyAllWindows()
 vs.stop()
