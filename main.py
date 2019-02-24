@@ -1,13 +1,33 @@
 from imutils.video import VideoStream
-import numpy as np
 import imutils
 import time
 from cv2 import cv2
 from keras.models import load_model
 from keras.preprocessing import image
 
+import numpy as np
+from matplotlib import animation, style, pyplot as plt
+
 emotions = ('angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral')
 minimum_face_confidence = 0.6
+
+style.use('fivethirtyeight')
+fig, ax = plt.subplots()
+
+y_pos = np.arange(len(emotions))
+#plt.bar(y_pos, np.zeros(len(emotions)), align='center', alpha=0.5)
+plt.ion()
+plt.show()
+def emotions_analysis(predictions):
+	plt.cla()
+	predictions *= 100
+	plt.bar(y_pos,predictions,align='center', alpha=0.5)
+	plt.ylabel('percentage')
+	plt.title('emotion')
+	plt.xticks(y_pos, emotions)
+	plt.yticks(np.arange(0, 110, 10))
+
+	
 
 # load our serialized model from disk
 print("loading models...")
@@ -78,6 +98,10 @@ while True:
 		#write emotion text above rectangle
 		color = (255,255,255)
 		cv2.putText(frame, emotion, (startX,y+10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+		emotions_analysis(predictions[0])
+		#animation.FuncAnimation(figure, emotions_analysis(predictions[0]), interval=1000)
+		fig.canvas.draw()
+		
 	
 	# show the output frame
 	cv2.imshow("Frame", frame)
