@@ -5,9 +5,13 @@ from cv2 import cv2
 from keras.models import load_model
 from keras.preprocessing import image
 
+import tkinter as tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 import numpy as np
 from matplotlib import animation, style, pyplot as plt
 
+window = tk.Tk()
 emotions = ('angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral')
 minimum_face_confidence = 0.6
 
@@ -39,7 +43,7 @@ model =  load_model('models/facial-expression/facial-expression-model.h5')
 # initialize the video stream and allow the cammera sensor to warmup
 print("starting video stream...")
 vs = VideoStream(src=0).start()
-time.sleep(2.0)
+#time.sleep(2.0)
 
 # loop over the frames from the video stream
 while True:
@@ -59,15 +63,18 @@ while True:
 	detections = net.forward()
 
 	# loop over the face detections and facial expression
+	num_of_faces = 0
+	emotions_prediction = np.zeros(len(emotions))
+	print(emotions_prediction)
+	#print(range(0, detections.shape[2]))
 	for i in range(0, detections.shape[2]):
 
 		#get the confidence from face detection
 		confidence = detections[0, 0, i, 2]
-
 		# skip weak face detection
 		if confidence < minimum_face_confidence:
 			continue
-
+		num_of_faces +=1
 		# compute the (x, y)-coordinates of the bounding box for the
 		# object
 		box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
@@ -90,23 +97,18 @@ while True:
 		face_pixels = np.expand_dims(face_pixels, axis=0)
 		face_pixels /= 255
 		predictions = model.predict(face_pixels)
-		print("predict: ",predictions)
-		max_index = np.argmax(predictions[0])
-			
-		emotion = emotions[max_index]
-			
-		#write emotion text above rectangle
-		color = (255,255,255)
-		cv2.putText(frame, emotion, (startX,y+10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
-		emotions_analysis(predictions[0])
+		emotions_prediction += predictions[0]
+	
+	emotions_prediction /= num_of_faces
+	emotions_analysis(emotions_prediction)
 		#animation.FuncAnimation(figure, emotions_analysis(predictions[0]), interval=1000)
-		fig.canvas.draw()
+	fig.canvas.draw()
 		
 	
 	# show the output frame
 	cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
- 
+	#print(num_of_faces)
 	# if the `q` key was pressed, break from the loop
 	if key == ord("q"):
 		break
