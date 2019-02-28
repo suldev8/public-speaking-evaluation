@@ -21,18 +21,14 @@ model =  load_model('models/facial-expression/facial-expression-model.h5')
 """ print("starting video stream...")
 vs = VideoStream(src=0).start() """
 #time.sleep(2.0)
-
-# loop over the frames from the video stream
-def face_detection(frame):
-	# grab the frame from the threaded video stream and resize it
-	# to have a maximum width of 400 pixels
-	frame = imutils.resize(frame, width=400)
- 
+		
+def emotion_predictions(frame):
 	# grab the frame dimensions and convert it to a blob
+	frame = imutils.resize(frame, width=400)
 	(h, w) = frame.shape[:2]
 	blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0,
 		(300, 300), (104.0, 177.0, 123.0))
- 
+
 	# pass the blob through the network and obtain the detections and
 	# predictions
 	net.setInput(blob)
@@ -64,7 +60,8 @@ def face_detection(frame):
 			(0, 0, 255), 2)
 		cv2.putText(frame, text, (startX, y),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
-	
+
+		
 		face = frame[startY:endY, startX:endX]
 		face = cv2.resize(face, (48,48))
 		face  = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
@@ -76,12 +73,10 @@ def face_detection(frame):
 		emotions_predictions += prdict_emotions[0]
 	
 	emotions_predictions /= num_of_faces
-	
-		#animation.FuncAnimation(figure, emotions_analysis(predictions[0]), interval=1000)
-	
-	#print(emotions_predictions)
 
 	return (frame, emotions_predictions)
+
+
 	# show the output frame
 	#cv2.imshow("Frame", frame)
 	#key = cv2.waitKey(1) & 0xFF

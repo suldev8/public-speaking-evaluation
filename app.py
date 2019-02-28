@@ -3,7 +3,7 @@ from cv2 import cv2
 from PIL import Image, ImageTk
 import time
 from imutils.video import VideoStream
-from face_detection import face_detection
+from emotion_recognition import emotion_predictions
 import numpy as np
 from matplotlib import animation, style, pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -40,12 +40,12 @@ videoLabel.grid()
 def video_stream():
     global emotions_predictions
     _, frame = video.read()
-    frame, emotions_predictions = face_detection(frame)
+    frame, emotions_predictions = emotion_predictions(frame)
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     image = ImageTk.PhotoImage(image = Image.fromarray(frame), master=videoStreamFrame)
     videoLabel.imgtk = image
     videoLabel.config(image=image)
-    videoLabel.after(50,video_stream)
+    videoLabel.after(40,video_stream)
 
 
 video_stream()
