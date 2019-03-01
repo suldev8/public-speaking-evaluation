@@ -22,7 +22,7 @@ model =  load_model('models/facial-expression/facial-expression-model.h5')
 vs = VideoStream(src=0).start() """
 #time.sleep(2.0)
 		
-def emotion_predictions(frame):
+def get_emotion_predictions(frame):
 	# grab the frame dimensions and convert it to a blob
 	frame = imutils.resize(frame, width=400)
 	(h, w) = frame.shape[:2]
@@ -71,8 +71,8 @@ def emotion_predictions(frame):
 		face_pixels /= 255
 		prdict_emotions = model.predict(face_pixels)
 		emotions_predictions += prdict_emotions[0]
-	
-	emotions_predictions /= num_of_faces
+	if num_of_faces:
+		emotions_predictions /= num_of_faces
 
 	return (frame, emotions_predictions)
 
