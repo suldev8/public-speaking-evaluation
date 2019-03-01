@@ -1,4 +1,3 @@
-from imutils.video import VideoStream
 import imutils
 import time
 from cv2 import cv2
