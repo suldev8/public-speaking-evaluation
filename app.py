@@ -161,10 +161,8 @@ class EmotionRecognitionPage(tk.Frame):
                 self.average_emotion += emotion_predictions
                 self.numb_of_frames += 1
             self.draw_bar_chart(emotion_predictions)
-            
-            print(self.average_emotion)
-            print(self.numb_of_frames)
             self.video_label.after(100, self.stream_video)
+            
         else:
             self.video_label.forget()
     
