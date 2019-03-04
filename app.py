@@ -43,6 +43,7 @@ class App(tk.Tk):
         self.show_frame(StartPage)
 
     def show_frame(self, cont):
+        #show the passed page class
         frame = self.frames[cont]
         frame.tkraise()
 
@@ -55,16 +56,19 @@ class StartPage(tk.Frame):
         logo_label.image = logo
         logo_label.pack()
 
+        #Label to explain how to use the buttons
         start_label = ttk.Label(self, text="Load a video or click stream to analyze emotions",
                                 font=LARGE_FONT)
         start_label.pack(pady=10, padx=10)
         btn_frame = ttk.Frame(self)
         btn_frame.pack()
 
+        #Load button to load a video
         load_btn = ttk.Button(btn_frame, text="Load Video",
                               command=lambda: self.load_video(controller))
         load_btn.pack(pady=10, padx=10, side="left")
 
+        #Stream button to run the webcam
         stream_btn = ttk.Button(btn_frame, text="Streaming",
                                 command=lambda: self.streaming(controller))
         stream_btn.pack(pady=10, padx=10, side="left")
@@ -95,19 +99,23 @@ class EmotionRecognitionPage(tk.Frame):
         btn_frame = ttk.Frame(self)
         btn_frame.pack(side="top")
         
+        #Back button to go back to the StartPage
         back_btn = ttk.Button(
             btn_frame, text="Back", command=lambda: self.back_to_start_page(controller))
         back_btn.pack(pady=10, padx=10, side="left")
         
+        #Start/Stop button  to start/stop analyzing
         self.start_stop_btn = ttk.Button(
             btn_frame, text="Start", command=self.start_stop)
         self.start_stop_btn.pack(pady=10, padx=10, side="right")
         
+        #initalize the video variable and create its frame and label
         self.video = None
         self.video_frame = tk.Frame(self)
         self.video_frame.pack()
         self.video_label = tk.Label(self.video_frame)
         
+        #creating and setting up the bar graph
         self.fig = Figure()
         self.ax = self.fig.add_subplot(111)
         self.fig.subplots_adjust(left=0.10)
@@ -121,6 +129,7 @@ class EmotionRecognitionPage(tk.Frame):
         self.canvas_bar = FigureCanvasTkAgg(self.fig, self.video_frame)
         self.canvas_bar.draw()
         
+        #average of emotion to count all predictions and devide on number of frames
         self.average_emotion = np.zeros(len(emotions))
         self.numb_of_frames = 0
 
@@ -177,6 +186,7 @@ class EmotionRecognitionPage(tk.Frame):
         if self.video:
             self.video.__del__()
         self.start_stop_btn.config(text="Start")
+        self.canvas_bar.get_tk_widget().forget()
         self.video_label.forget()
         controller.show_frame(StartPage)
 
