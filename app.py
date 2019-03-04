@@ -112,6 +112,11 @@ class EmotionRecognitionPage(tk.Frame):
             btn_frame, text="Start", command=self.start_stop)
         self.start_stop_btn.pack(pady=10, padx=10, side="right")
 
+        # state of analyzing label
+        self.initial_state_analyzing = "Press Start to begin analyzing"
+        self.state_analyzing = ttk.Label(self,text=self.initial_state_analyzing, font=LARGE_FONT)
+        self.state_analyzing.pack()
+
         # initalize the video variable and create its frame and label
         self.video = None
         self.video_frame = tk.Frame(self)
@@ -142,17 +147,21 @@ class EmotionRecognitionPage(tk.Frame):
         self.numb_of_frames = 0
 
     def start_stop(self):
+        # Check if clicked button is Start convert button to Stop
         if self.start_stop_btn.cget("text") == "Start":
             self.start_stop_btn.config(text="Stop")
+            self.state_analyzing.config(text="Analyzing")
             if video_path == 0:
                 self.video_label.pack(pady=10, padx=10, side="left")
                 self.canvas_bar.get_tk_widget().pack(
                     pady=10, padx=10, side="right", fill="both", expand="1")
             self.start_video()
 
+        #chack if clicked button is Stop convert it to Start
         elif self.start_stop_btn.cget("text") == "Stop":
             self.video.__del__()
             self.start_stop_btn.config(text="Start")
+            self.state_analyzing.config(text="Analyzing results")
             self.video_label.forget()
             self.canvas_bar.get_tk_widget().forget()
             self.show_average()
@@ -220,6 +229,7 @@ class EmotionRecognitionPage(tk.Frame):
     def back_to_start_page(self, controller):
         if self.video:
             self.video.__del__()
+        self.state_analyzing.config(text=self.initial_state_analyzing)
         self.start_stop_btn.config(text="Start")
         self.canvas_bar.get_tk_widget().forget()
         self.video_label.forget()
