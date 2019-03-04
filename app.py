@@ -124,20 +124,32 @@ class EmotionRecognitionPage(tk.Frame):
         self.video_label = tk.Label(self.video_frame)
 
         # creating and setting up the bar graph
-        self.fig = Figure()
-        self.ax = self.fig.add_subplot(111)
-        self.fig.subplots_adjust(left=0.10)
-        self.bars = self.ax.bar(y_pos, np.zeros(
+        self.fig_bar = Figure(figsize=(8,8))
+        self.ax_graph = self.fig_bar.add_subplot(111)
+        self.fig_bar.subplots_adjust(left=0.10)
+        self.bars = self.ax_graph.bar(y_pos, np.zeros(
             len(emotions)), align='center', alpha=0.5)
-        self.ax.set_ylabel('percentage')
-        self.ax.set_title('emotion')
-        self.ax.set_xticks(y_pos)
-        self.ax.set_xticklabels(emotions)
-        self.ax.set_yticks(np.arange(0, 110, 10))
+        self.ax_graph.set_ylabel('percentage')
+        self.ax_graph.set_title('emotion')
+        self.ax_graph.set_xticks(y_pos)
+        self.ax_graph.set_xticklabels(emotions)
+        self.ax_graph.set_yticks(np.arange(0, 110, 10))
 
-        self.canvas_bar = FigureCanvasTkAgg(self.fig, self.video_frame)
+        self.canvas_bar = FigureCanvasTkAgg(self.fig_bar, self.video_frame)
         self.canvas_bar.draw()
 
+        #creating and setting up th line graph
+        self.fig_line = Figure(figsize=(8,8))
+        self.ax_line = self.fig_line.add_subplot(111)
+        self.fig_line.subplots_adjust(left=0.10)
+        self.ax_line.set_ylabel('Percentage')
+        self.ax_line.set_title('Frames')
+        self.ax_line.set_yticks(np.arange(0, 110, 10))    
+        self.canvas_line = FigureCanvasTkAgg(self.fig_line, self.video_frame)
+        #initializing emotions dictionary for data to be used in drawing the line graph for each emotion
+        self.data_emotions = {emotion: [] for emotion in emotions}
+        print("first\n" , self.data_emotions)
+        
         # pregress bar for loading the video and analyzing it
         self.progress_bar = ttk.Progressbar(
             self.video_frame, orient='horizontal', length=270, mode='determinate')
@@ -151,10 +163,17 @@ class EmotionRecognitionPage(tk.Frame):
         if self.start_stop_btn.cget("text") == "Start":
             self.start_stop_btn.config(text="Stop")
             self.state_analyzing.config(text="Analyzing")
+            self.average_emotion = np.zeros(len(emotions))
+            self.numb_of_frames = 0
+            self.data_emotions = {emotion: [] for emotion in emotions}
+
+            self.canvas_line.get_tk_widget().forget()
+
             if video_path == 0:
                 self.video_label.pack(pady=10, padx=10, side="left")
                 self.canvas_bar.get_tk_widget().pack(
                     pady=10, padx=10, side="right", fill="both", expand="1")
+        
             self.start_video()
 
         #chack if clicked button is Stop convert it to Start
@@ -164,12 +183,16 @@ class EmotionRecognitionPage(tk.Frame):
             self.state_analyzing.config(text="Analyzing results")
             self.video_label.forget()
             self.canvas_bar.get_tk_widget().forget()
+            self.canvas_line.get_tk_widget().forget()
             self.show_average()
 
     def show_average(self):
-        self.canvas_bar.get_tk_widget().pack(pady=10, padx=10, side="top")
+        self.canvas_bar.get_tk_widget().pack(pady=10, padx=10, side="left")
+
+        self.canvas_line.get_tk_widget().pack()
         self.average_emotion /= self.numb_of_frames
         self.draw_bar_chart(self.average_emotion)
+        self.draw_line_chart()
 
     def start_video(self):
         global video_path
@@ -192,8 +215,7 @@ class EmotionRecognitionPage(tk.Frame):
             self.video_label.imgtk = image
             self.video_label.config(image=image)
             if(emotion_predictions.all(0)):
-                self.average_emotion += emotion_predictions
-                self.numb_of_frames += 1
+                self.add_predictions_data(emotion_predictions)
             self.draw_bar_chart(emotion_predictions)
             self.video_label.after(100, self.stream_video)
 
@@ -210,14 +232,20 @@ class EmotionRecognitionPage(tk.Frame):
         if ret:
             frame, emotion_predictions = get_emotion_predictions(frame)
             if(emotion_predictions.all(0)):
-                self.average_emotion += emotion_predictions
-                self.numb_of_frames += 1
+                self.add_predictions_data(emotion_predictions)
             self.progress_bar.step(1)
             self.progress_bar.after(1, self.load_video)
         else:
             # remove progress barstop loading and
             self.progress_bar.forget()
             self.start_stop()
+    
+    def add_predictions_data(self, emotion_predictions):
+        self.average_emotion += emotion_predictions
+        self.numb_of_frames += 1
+        for data_emotion, prediction in zip(self.data_emotions, emotion_predictions):
+            print("adding\n" , self.data_emotions)
+            self.data_emotions[data_emotion].append(prediction * 100)
 
     def draw_bar_chart(self, emotion_predictions):
 
@@ -225,13 +253,27 @@ class EmotionRecognitionPage(tk.Frame):
         for rect, h in zip(self.bars, emotion_predictions):
             rect.set_height(h)
         self.canvas_bar.draw()
-
+    
+    def draw_line_chart(self):
+        self.ax_line.clear()
+        for data_emotion in self.data_emotions:
+            print(np.arange(0,self.numb_of_frames))
+            print(self.data_emotions[data_emotion])
+            print(data_emotion)
+            self.ax_line.plot(np.arange(0,self.numb_of_frames),self.data_emotions[data_emotion], label=data_emotion)
+        self.ax_line.set_yticks(np.arange(0, 110, 10))
+        self.fig_line.legend()
+        self.canvas_line.draw()
+        
+        
+   
     def back_to_start_page(self, controller):
         if self.video:
             self.video.__del__()
         self.state_analyzing.config(text=self.initial_state_analyzing)
         self.start_stop_btn.config(text="Start")
         self.canvas_bar.get_tk_widget().forget()
+        self.canvas_line.get_tk_widget().forget()
         self.video_label.forget()
         controller.show_frame(StartPage)
 
