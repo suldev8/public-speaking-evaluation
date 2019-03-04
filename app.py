@@ -129,6 +129,10 @@ class EmotionRecognitionPage(tk.Frame):
         self.canvas_bar = FigureCanvasTkAgg(self.fig, self.video_frame)
         self.canvas_bar.draw()
         
+        #pregress bar for loading the video and analyzing it
+        self.progress_bar = ttk.Progressbar(self.video_frame, orient='horizontal', length=270, mode='determinate')
+        
+
         #average of emotion to count all predictions and devide on number of frames
         self.average_emotion = np.zeros(len(emotions))
         self.numb_of_frames = 0
@@ -136,8 +140,9 @@ class EmotionRecognitionPage(tk.Frame):
     def start_stop(self):
         if self.start_stop_btn.cget("text") == "Start":
             self.start_stop_btn.config(text="Stop")
-            self.video_label.pack(pady=10, padx=10, side="left")
-            self.canvas_bar.get_tk_widget().pack(pady=10, padx=10, side="right", fill="both", expand="1")
+            if video_path == 0:
+                self.video_label.pack(pady=10, padx=10, side="left")
+                self.canvas_bar.get_tk_widget().pack(pady=10, padx=10, side="right", fill="both", expand="1")
             self.start_video()
         
         elif self.start_stop_btn.cget("text") == "Stop":
@@ -155,9 +160,14 @@ class EmotionRecognitionPage(tk.Frame):
     def start_video(self):
         global video_path
         self.video = VideoCapture(video_path)
-        self.stream_video()
+        if video_path:
+            self.progress_bar.pack(expand=True, fill="both")
+            self.load_video()
+        else:
+            self.stream_video()
 
     def stream_video(self):
+        #read the video from the streaming camera and analyze it
         ret, frame = self.video.get_frame()
         if ret:
             frame, emotion_predictions = get_emotion_predictions(frame)
@@ -174,6 +184,51 @@ class EmotionRecognitionPage(tk.Frame):
             
         else:
             self.video_label.forget()
+        
+    def load_video(self):
+        """#get the number of frames in the video
+        count_frames = int(self.video.count_frames())
+        print(count_frames)
+        print(video_path)
+        self.progress_bar.config(maximum=count_frames)
+        
+        #self.progress_bar.start()
+        #loop through frames and analyze it
+        while True:
+            ret, frame = self.video.get_frame()
+            print(ret)
+            print(type(frame))
+            if ret:
+                frame, emotion_predictions = get_emotion_predictions(frame)
+                if(emotion_predictions.all(0)):
+                    self.average_emotion += emotion_predictions
+                    self.numb_of_frames += 1
+                self.progress_bar.step(1)
+            else:
+                print("break the loop")
+                break
+        self.progress_bar.forget() """
+        #get the number of frames in the video
+        count_frames = int(self.video.count_frames())
+        print(count_frames)
+        print(video_path)
+        self.progress_bar.config(maximum=count_frames)
+        
+        #loop through frames and analyze it
+        ret, frame = self.video.get_frame()
+        print(ret)
+        print(type(frame))
+        if ret:
+            frame, emotion_predictions = get_emotion_predictions(frame)
+            if(emotion_predictions.all(0)):
+                self.average_emotion += emotion_predictions
+                self.numb_of_frames += 1
+            self.progress_bar.step(1)
+            self.progress_bar.after(1,self.load_video)
+        else:
+            #remove progress barstop loading and 
+            self.progress_bar.forget()
+            self.start_stop()
     
     def draw_bar_chart(self, emotion_predictions):
 
@@ -204,6 +259,8 @@ class VideoCapture:
                 return (ret, None)
         else:
             return(False, None)
+    def count_frames(self):
+        return self.video.get(cv2.CAP_PROP_FRAME_COUNT)
     
     def __del__(self):
         if self.video.isOpened():
