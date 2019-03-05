@@ -142,12 +142,12 @@ class EmotionRecognitionPage(tk.Frame):
         self.fig_line = Figure(figsize=(8,8))
         self.ax_line = self.fig_line.add_subplot(111)
         self.fig_line.subplots_adjust(left=0.10)
-        self.ax_line.set_ylabel('Percentage')
-        self.ax_line.set_title('Frames')
+        self.ax_line.set_ylabel('Percentage of Emotion')
+        self.ax_line.set_title('Percentage Through Time')
         self.ax_line.set_yticks(np.arange(0, 110, 10))    
         self.canvas_line = FigureCanvasTkAgg(self.fig_line, self.video_frame)
         #initializing emotions dictionary for data to be used in drawing the line graph for each emotion
-        self.data_emotions = {emotion: [] for emotion in emotions}
+        self.data_emotions = {emotion: np.array([]) for emotion in emotions}
         print("first\n" , self.data_emotions)
         
         # pregress bar for loading the video and analyzing it
@@ -217,7 +217,7 @@ class EmotionRecognitionPage(tk.Frame):
             if(emotion_predictions.all(0)):
                 self.add_predictions_data(emotion_predictions)
             self.draw_bar_chart(emotion_predictions)
-            self.video_label.after(100, self.stream_video)
+            self.video_label.after(1, self.stream_video)
 
         else:
             self.video_label.forget()
@@ -255,13 +255,25 @@ class EmotionRecognitionPage(tk.Frame):
         self.canvas_bar.draw()
     
     def draw_line_chart(self):
+        # This function is to draw line graph for each emotion
+
+        # Lopp throught the data prediction to normalize it
+        for data_emotion in self.data_emotions:
+            self.data_emotions[data_emotion] = np.array_split(self.data_emotions[data_emotion], 100)
+            for index, emotion_prediction in enumerate(self.data_emotions[data_emotion]):
+                if emotion_prediction.any():
+                    self.data_emotions[data_emotion][index] = emotion_prediction.mean()
+                else:
+                    self.data_emotions[data_emotion][index] = np.nan
+
         self.ax_line.clear()
         for data_emotion in self.data_emotions:
-            print(np.arange(0,self.numb_of_frames))
-            print(self.data_emotions[data_emotion])
-            print(data_emotion)
-            self.ax_line.plot(np.arange(0,self.numb_of_frames),self.data_emotions[data_emotion], label=data_emotion)
+            self.ax_line.plot(np.arange(0,100),self.data_emotions[data_emotion], label=data_emotion)
+        
         self.ax_line.set_yticks(np.arange(0, 110, 10))
+        self.ax_line.set_xticks(np.arange(0, 110, 10))
+        self.ax_line.set_ylabel('Percentage of Emotion')
+        self.ax_line.set_title('Percentage Through Time')
         self.fig_line.legend()
         self.canvas_line.draw()
         
