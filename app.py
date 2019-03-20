@@ -18,7 +18,7 @@ LARGE_FONT = ("", 12)
 
 video_path = 0
 
-emotions = ('angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral')
+emotions = ('angry' 'happy', 'sad', 'neutral')
 style.use('fivethirtyeight')
 
 y_pos = np.arange(len(emotions))
@@ -234,7 +234,7 @@ class EmotionRecognitionPage(tk.Frame):
             if(emotion_predictions.all(0)):
                 self.add_predictions_data(emotion_predictions)
             self.progress_bar.step(1)
-            self.progress_bar.after(1, self.load_video)
+            self.progress_bar.after(40, self.load_video)
         else:
             # remove progress barstop loading and
             self.progress_bar.forget()
