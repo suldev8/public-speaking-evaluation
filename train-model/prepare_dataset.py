@@ -35,26 +35,31 @@ def divided(emotion, pixels, usage):
             labels["disgust"]["usage"].append(u)
 
         elif e == 2:
+            e = e - 1
             labels["fear"]["emotion"].append(e)
             labels["fear"]["pixels"].append(p)
             labels["fear"]["usage"].append(u)
 
         elif e == 3:
+            e = e - 1
             labels["happy"]["emotion"].append(e)
             labels["happy"]["pixels"].append(p)
             labels["happy"]["usage"].append(u)
 
         elif e == 4:
+            e = e - 1
             labels["sad"]["emotion"].append(e)
             labels["sad"]["pixels"].append(p)
             labels["sad"]["usage"].append(u)
 
         elif e == 5:
+            e = e - 1
             labels["surprise"]["emotion"].append(e)
             labels["surprise"]["pixels"].append(p)
             labels["surprise"]["usage"].append(u)
 
         elif e == 6:
+            e = e - 1
             labels["neutral"]["emotion"].append(e)
             labels["neutral"]["pixels"].append(p)
             labels["neutral"]["usage"].append(u)
