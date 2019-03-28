@@ -18,7 +18,7 @@ LARGE_FONT = ("", 12)
 
 video_path = 0
 
-emotions = ('angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral')
+emotions = ('angry', 'fear', 'happy', 'sad', 'surprise', 'neutral')
 style.use('fivethirtyeight')
 
 y_pos = np.arange(len(emotions))
@@ -142,7 +142,6 @@ class EmotionRecognitionPage(tk.Frame):
 
         self.canvas_bar_video = FigureCanvasTkAgg(self.fig_bar, self.video_frame)
         self.canvas_bar_average = FigureCanvasTkAgg(self.fig_bar, self.fr_bar)
-        # self.canvas_bar.draw()
 
         #creating and setting up th line graph
         self.fig_line = Figure(figsize=(24,24))
@@ -150,11 +149,11 @@ class EmotionRecognitionPage(tk.Frame):
         i = 0
         for e in self.line_graphs:
             i += 1
-            self.line_graphs[e] = self.fig_line.add_subplot(340 + i)
+            self.line_graphs[e] = self.fig_line.add_subplot(330 + i)
             self.fig_line.subplots_adjust(left=0.10, bottom=-0.10)    
         self.canvas_line = FigureCanvasTkAgg(self.fig_line, self.fr_line)
         #initializing emotions dictionary for data to be used in drawing the line graph for each emotion
-        self.data_emotions = None#{emotion: np.array([]) for emotion in emotions}
+        self.data_emotions = None
         
         # pregress bar for loading the video and analyzing it
         self.progress_bar = ttk.Progressbar(

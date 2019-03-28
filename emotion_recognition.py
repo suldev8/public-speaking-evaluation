@@ -31,7 +31,7 @@ def get_emotion_predictions(frame):
 
     # loop over the face detections and facial expression
     num_of_faces = 0
-    num_of_emotions = 7
+    num_of_emotions = 6
     emotions_predictions = np.zeros(num_of_emotions)
     #print(range(0, detections.shape[2]))
     for i in range(0, detections.shape[2]):
