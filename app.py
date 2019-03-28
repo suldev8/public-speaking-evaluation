@@ -120,9 +120,14 @@ class EmotionRecognitionPage(tk.Frame):
         # initalize the video variable and create its frame and label
         self.video = None
         self.video_frame = tk.Frame(self)
-        self.video_frame.pack()
+        # self.video_frame.pack()
         self.video_label = tk.Label(self.video_frame)
 
+        # crate Notebook with two tabs for each bar and line graphs
+        self.np_graphs = ttk.Notebook(self)
+        self.fr_bar = ttk.Frame(self.np_graphs)
+        self.fr_line = ttk.Frame(self.np_graphs)
+        
         # creating and setting up the bar graph
         self.fig_bar = Figure(figsize=(8,8))
         self.ax_graph = self.fig_bar.add_subplot(111)
@@ -135,8 +140,9 @@ class EmotionRecognitionPage(tk.Frame):
         self.ax_graph.set_xticklabels(emotions)
         self.ax_graph.set_yticks(np.arange(0, 110, 10))
 
-        self.canvas_bar = FigureCanvasTkAgg(self.fig_bar, self.video_frame)
-        self.canvas_bar.draw()
+        self.canvas_bar_video = FigureCanvasTkAgg(self.fig_bar, self.video_frame)
+        self.canvas_bar_average = FigureCanvasTkAgg(self.fig_bar, self.fr_bar)
+        # self.canvas_bar.draw()
 
         #creating and setting up th line graph
         self.fig_line = Figure(figsize=(8,8))
@@ -145,10 +151,9 @@ class EmotionRecognitionPage(tk.Frame):
         self.ax_line.set_ylabel('Percentage of Emotion')
         self.ax_line.set_title('Percentage Through Time')
         self.ax_line.set_yticks(np.arange(0, 110, 10))    
-        self.canvas_line = FigureCanvasTkAgg(self.fig_line, self.video_frame)
+        self.canvas_line = FigureCanvasTkAgg(self.fig_line, self.fr_line)
         #initializing emotions dictionary for data to be used in drawing the line graph for each emotion
-        self.data_emotions = {emotion: np.array([]) for emotion in emotions}
-        print("first\n" , self.data_emotions)
+        self.data_emotions = None#{emotion: np.array([]) for emotion in emotions}
         
         # pregress bar for loading the video and analyzing it
         self.progress_bar = ttk.Progressbar(
@@ -161,17 +166,17 @@ class EmotionRecognitionPage(tk.Frame):
     def start_stop(self):
         # Check if clicked button is Start convert button to Stop
         if self.start_stop_btn.cget("text") == "Start":
+            self.forget_all()
             self.start_stop_btn.config(text="Stop")
             self.state_analyzing.config(text="Analyzing")
             self.average_emotion = np.zeros(len(emotions))
             self.numb_of_frames = 0
             self.data_emotions = {emotion: [] for emotion in emotions}
-
-            self.canvas_line.get_tk_widget().forget()
-
+            self.video_frame.pack()
+            
             if video_path == 0:
                 self.video_label.pack(pady=10, padx=10, side="left")
-                self.canvas_bar.get_tk_widget().pack(
+                self.canvas_bar_video.get_tk_widget().pack(
                     pady=10, padx=10, side="right", fill="both", expand="1")
         
             self.start_video()
@@ -182,16 +187,20 @@ class EmotionRecognitionPage(tk.Frame):
             self.start_stop_btn.config(text="Start")
             self.state_analyzing.config(text="Analyzing results")
             self.video_label.forget()
-            self.canvas_bar.get_tk_widget().forget()
+            self.canvas_bar_video.get_tk_widget().forget()
             self.canvas_line.get_tk_widget().forget()
+            self.video_frame.forget()
             self.show_average()
 
     def show_average(self):
-        self.canvas_bar.get_tk_widget().pack(pady=10, padx=10, side="left")
-
+        self.np_graphs.add(self.fr_bar, text="bar graph")
+        self.np_graphs.add(self.fr_line, text="line graph")
+        self.canvas_bar_average.get_tk_widget().pack(pady=10, padx=10, side="left")
         self.canvas_line.get_tk_widget().pack()
+        self.np_graphs.pack()
+
         self.average_emotion /= self.numb_of_frames
-        self.draw_bar_chart(self.average_emotion)
+        self.draw_bar_chart(self.average_emotion, self.canvas_bar_average)
         self.draw_line_chart()
 
     def start_video(self):
@@ -216,8 +225,8 @@ class EmotionRecognitionPage(tk.Frame):
             self.video_label.config(image=image)
             if(emotion_predictions.all(0)):
                 self.add_predictions_data(emotion_predictions)
-            self.draw_bar_chart(emotion_predictions)
-            self.video_label.after(1, self.stream_video)
+            self.draw_bar_chart(emotion_predictions, self.canvas_bar_video)
+            self.video_label.after(20, self.stream_video)
 
         else:
             self.video_label.forget()
@@ -244,15 +253,14 @@ class EmotionRecognitionPage(tk.Frame):
         self.average_emotion += emotion_predictions
         self.numb_of_frames += 1
         for data_emotion, prediction in zip(self.data_emotions, emotion_predictions):
-            print("adding\n" , self.data_emotions)
             self.data_emotions[data_emotion].append(prediction * 100)
 
-    def draw_bar_chart(self, emotion_predictions):
+    def draw_bar_chart(self, emotion_predictions, canvas_bar):
 
         emotion_predictions *= 100
         for rect, h in zip(self.bars, emotion_predictions):
             rect.set_height(h)
-        self.canvas_bar.draw()
+        canvas_bar.draw()
     
     def draw_line_chart(self):
         # This function is to draw line graph for each emotion
@@ -284,10 +292,17 @@ class EmotionRecognitionPage(tk.Frame):
             self.video.__del__()
         self.state_analyzing.config(text=self.initial_state_analyzing)
         self.start_stop_btn.config(text="Start")
-        self.canvas_bar.get_tk_widget().forget()
-        self.canvas_line.get_tk_widget().forget()
-        self.video_label.forget()
+        self.forget_all()
         controller.show_frame(StartPage)
+
+    def forget_all(self):
+        self.canvas_bar_video.get_tk_widget().forget()
+        self.canvas_bar_average.get_tk_widget().forget()
+        self.canvas_line.get_tk_widget().forget()
+        if self.np_graphs.tabs():
+            self.np_graphs.forget(tab_id=self.fr_bar)
+            self.np_graphs.forget(tab_id=self.fr_line)
+        self.video_label.forget()
 
 
 class VideoCapture:
