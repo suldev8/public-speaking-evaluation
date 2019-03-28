@@ -145,12 +145,13 @@ class EmotionRecognitionPage(tk.Frame):
         # self.canvas_bar.draw()
 
         #creating and setting up th line graph
-        self.fig_line = Figure(figsize=(8,8))
-        self.ax_line = self.fig_line.add_subplot(111)
-        self.fig_line.subplots_adjust(left=0.10)
-        self.ax_line.set_ylabel('Percentage of Emotion')
-        self.ax_line.set_title('Percentage Through Time')
-        self.ax_line.set_yticks(np.arange(0, 110, 10))    
+        self.fig_line = Figure(figsize=(24,24))
+        self.line_graphs = {e: None for e in emotions}
+        i = 0
+        for e in self.line_graphs:
+            i += 1
+            self.line_graphs[e] = self.fig_line.add_subplot(340 + i)
+            self.fig_line.subplots_adjust(left=0.10, bottom=-0.10)    
         self.canvas_line = FigureCanvasTkAgg(self.fig_line, self.fr_line)
         #initializing emotions dictionary for data to be used in drawing the line graph for each emotion
         self.data_emotions = None#{emotion: np.array([]) for emotion in emotions}
@@ -195,7 +196,7 @@ class EmotionRecognitionPage(tk.Frame):
     def show_average(self):
         self.np_graphs.add(self.fr_bar, text="bar graph")
         self.np_graphs.add(self.fr_line, text="line graph")
-        self.canvas_bar_average.get_tk_widget().pack(pady=10, padx=10, side="left")
+        self.canvas_bar_average.get_tk_widget().pack(pady=10, padx=10)
         self.canvas_line.get_tk_widget().pack()
         self.np_graphs.pack()
 
@@ -274,16 +275,24 @@ class EmotionRecognitionPage(tk.Frame):
                 else:
                     self.data_emotions[data_emotion][index] = np.nan
 
-        self.ax_line.clear()
-        for data_emotion in self.data_emotions:
-            self.ax_line.plot(np.arange(0,100),self.data_emotions[data_emotion], label=data_emotion)
-        
-        self.ax_line.set_yticks(np.arange(0, 110, 10))
-        self.ax_line.set_xticks(np.arange(0, 110, 10))
-        self.ax_line.set_ylabel('Percentage of Emotion')
-        self.ax_line.set_title('Percentage Through Time')
-        self.fig_line.legend()
-        self.canvas_line.draw()
+        for e in self.line_graphs:
+            self.line_graphs[e].clear()
+            self.line_graphs[e].plot(np.arange(0,100),self.data_emotions[e])
+
+            # Set reange of ticks
+            self.line_graphs[e].set_yticks(np.arange(0, 110, 10))
+            self.line_graphs[e].set_xticks(np.arange(0, 110, 10))
+
+            # Size of ticks
+            self.line_graphs[e].xaxis.set_tick_params(labelsize=12)
+            self.line_graphs[e].yaxis.set_tick_params(labelsize=12)
+
+            # Ylabel
+            self.line_graphs[e].set_ylabel('Percentage', fontsize=14)
+            
+            self.line_graphs[e].set_title(e, fontsize=18)
+
+            self.canvas_line.draw()
         
         
    
