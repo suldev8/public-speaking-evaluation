@@ -114,4 +114,4 @@ model.compile(loss='categorical_crossentropy', optimizer=keras.optimizers.Adam()
 #H = model.fit_generator(x_train, y_train, epochs=epochs)  # train for all trainset
 H = model.fit_generator(train_generator, steps_per_epoch=batch_size, epochs=epochs) #train for randomly selected one
 
-model.save('./models/facial-expression/facial-expression-model.h5')
+model.save('../models/facial-expression/facial-expression-model.h5')
