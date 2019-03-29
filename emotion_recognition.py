@@ -68,4 +68,4 @@ def get_emotion_predictions(frame):
     if num_of_faces:
         emotions_predictions /= num_of_faces
 
-    return (frame, emotions_predictions)
+    return (frame, emotions_predictions, num_of_faces)

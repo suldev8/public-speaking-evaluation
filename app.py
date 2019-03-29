@@ -162,6 +162,7 @@ class EmotionRecognitionPage(tk.Frame):
         # average of emotion to count all predictions and devide on number of frames
         self.average_emotion = np.zeros(len(emotions))
         self.numb_of_frames = 0
+        self.numb_of_faces = 0
 
     def start_stop(self):
         # Check if clicked button is Start convert button to Stop
@@ -185,7 +186,7 @@ class EmotionRecognitionPage(tk.Frame):
         elif self.start_stop_btn.cget("text") == "Stop":
             self.video.__del__()
             self.start_stop_btn.config(text="Start")
-            self.state_analyzing.config(text="Analyzing results")
+                
             self.video_label.forget()
             self.canvas_bar_video.get_tk_widget().forget()
             self.canvas_line.get_tk_widget().forget()
@@ -193,6 +194,16 @@ class EmotionRecognitionPage(tk.Frame):
             self.show_average()
 
     def show_average(self):
+        #add number of faces to the state
+        result = "Analyzing results\nNo. of faces:"
+        if self.numb_of_faces:
+            self.numb_of_faces /= self.numb_of_frames
+            numb_of_faces = round(self.numb_of_faces, 2)
+            self.state_analyzing.config(text=f"{result} {numb_of_faces}")
+        else:
+            self.state_analyzing.config(text=f"{result} 0")
+
+        # Add notebook tabs
         self.np_graphs.add(self.fr_bar, text="bar graph")
         self.np_graphs.add(self.fr_line, text="line graph")
         self.canvas_bar_average.get_tk_widget().pack(pady=10, padx=10)
@@ -216,7 +227,7 @@ class EmotionRecognitionPage(tk.Frame):
         # read the video from the streaming camera and analyze it
         ret, frame = self.video.get_frame()
         if ret:
-            frame, emotion_predictions = get_emotion_predictions(frame)
+            frame, emotion_predictions, numb_of_faces = get_emotion_predictions(frame)
 
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             image = ImageTk.PhotoImage(
@@ -224,6 +235,7 @@ class EmotionRecognitionPage(tk.Frame):
             self.video_label.imgtk = image
             self.video_label.config(image=image)
             if(emotion_predictions.all(0)):
+                self.numb_of_faces += numb_of_faces
                 self.add_predictions_data(emotion_predictions)
             self.draw_bar_chart(emotion_predictions, self.canvas_bar_video)
             self.video_label.after(20, self.stream_video)
@@ -239,8 +251,9 @@ class EmotionRecognitionPage(tk.Frame):
         # read video and analyze it
         ret, frame = self.video.get_frame()
         if ret:
-            frame, emotion_predictions = get_emotion_predictions(frame)
+            frame, emotion_predictions, numb_of_faces = get_emotion_predictions(frame)
             if(emotion_predictions.all(0)):
+                self.numb_of_faces += numb_of_faces
                 self.add_predictions_data(emotion_predictions)
             self.progress_bar.step(1)
             self.progress_bar.after(1, self.load_video)
