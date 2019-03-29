@@ -276,7 +276,7 @@ class EmotionRecognitionPage(tk.Frame):
 
         for e in self.line_graphs:
             self.line_graphs[e].clear()
-            self.line_graphs[e].plot(np.arange(0,100),self.data_emotions[e])
+            self.line_graphs[e].plot(np.arange(0,100),self.data_emotions[e], linewidth=2)
 
             # Set reange of ticks
             self.line_graphs[e].set_yticks(np.arange(0, 110, 10))
