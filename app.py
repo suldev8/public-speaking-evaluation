@@ -29,6 +29,7 @@ class App(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         tk.Tk.iconbitmap(self, default="assets/app_icon.ico")
         tk.Tk.title(self, "Public Speaking Evaluation")
+        tk.Tk.state(self, "zoomed")
 
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
