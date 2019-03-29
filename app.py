@@ -8,7 +8,7 @@ from emotion_recognition import get_emotion_predictions
 import matplotlib
 from matplotlib import style, pyplot as plt
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 import numpy as np
 
@@ -142,6 +142,8 @@ class EmotionRecognitionPage(tk.Frame):
 
         self.canvas_bar_video = FigureCanvasTkAgg(self.fig_bar, self.video_frame)
         self.canvas_bar_average = FigureCanvasTkAgg(self.fig_bar, self.fr_bar)
+        self.toolbar_avaerage = NavigationToolbar2Tk(self.canvas_bar_average, self.fr_bar)
+        # self.toolbar_avaerage.update()
 
         #creating and setting up th line graph
         self.fig_line = Figure(figsize=(24,24))
@@ -152,7 +154,9 @@ class EmotionRecognitionPage(tk.Frame):
             self.line_graphs[e] = self.fig_line.add_subplot(330 + i)
             self.fig_line.subplots_adjust(left=0.10, bottom=-0.10)    
         self.canvas_line = FigureCanvasTkAgg(self.fig_line, self.fr_line)
-        #initializing emotions dictionary for data to be used in drawing the line graph for each emotion
+        self.line_toolbar = NavigationToolbar2Tk(self.canvas_line, self.fr_line)
+        
+        #initializing data emotions dictionary for data to be used in drawing the line graph for each emotion
         self.data_emotions = None
         
         # pregress bar for loading the video and analyzing it
@@ -274,7 +278,7 @@ class EmotionRecognitionPage(tk.Frame):
         for rect, h in zip(self.bars, emotion_predictions):
             rect.set_height(h)
         canvas_bar.draw()
-    
+
     def draw_line_chart(self):
         # This function is to draw line graph for each emotion
 
