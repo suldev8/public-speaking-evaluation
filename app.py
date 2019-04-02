@@ -222,9 +222,9 @@ class EmotionRecognitionPage(tk.Frame):
             self.state_analyzing.config(text=f"{result} 0")
 
         # Add notebook tabs
-        self.np_graphs.add(self.fr_pie, text="pie chart")
-        self.np_graphs.add(self.fr_bar, text="bar graph")
-        self.np_graphs.add(self.fr_line, text="line graph")
+        self.np_graphs.add(self.fr_pie, text="Pie chart")
+        self.np_graphs.add(self.fr_bar, text="Bar graph")
+        self.np_graphs.add(self.fr_line, text="Line graph")
 
         self.canvas_pie.get_tk_widget().pack()
         self.canvas_bar_average.get_tk_widget().pack(pady=10, padx=10)
