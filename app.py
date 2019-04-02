@@ -115,7 +115,8 @@ class EmotionRecognitionPage(tk.Frame):
 
         # state of analyzing label
         self.initial_state_analyzing = "Press Start to begin analyzing"
-        self.state_analyzing = ttk.Label(self,text=self.initial_state_analyzing, font=LARGE_FONT)
+        self.state_analyzing = ttk.Label(
+            self, text=self.initial_state_analyzing, font=LARGE_FONT)
         self.state_analyzing.pack()
 
         # initalize the video variable and create its frame and label
@@ -127,39 +128,52 @@ class EmotionRecognitionPage(tk.Frame):
         # crate Notebook with two tabs for each bar and line graphs
         self.np_graphs = ttk.Notebook(self)
         self.fr_bar = ttk.Frame(self.np_graphs)
+        self.fr_pie = ttk.Frame(self.np_graphs)
         self.fr_line = ttk.Frame(self.np_graphs)
-        
+
+        # Creating and settig up the Pie chart
+        self.fig_pie = Figure(figsize=(8, 8))
+        self.ax_pie = self.fig_pie.add_subplot(111)
+        self.ax_pie.pie(y_pos, labels=emotions, shadow=True)
+        self.ax_pie.clear()
+
+        self.canvas_pie = FigureCanvasTkAgg(self.fig_pie, self.fr_pie)
+        self.pie_toolbar = NavigationToolbar2Tk(self.canvas_pie, self.fr_pie)
+
         # creating and setting up the bar graph
-        self.fig_bar = Figure(figsize=(8,8))
+        self.fig_bar = Figure(figsize=(8, 8))
         self.ax_graph = self.fig_bar.add_subplot(111)
         self.fig_bar.subplots_adjust(left=0.10)
         self.bars = self.ax_graph.bar(y_pos, np.zeros(
             len(emotions)), align='center', alpha=0.5)
-        self.ax_graph.set_ylabel('percentage')
-        self.ax_graph.set_title('emotion')
+        self.ax_graph.set_ylabel('Percentage')
+        self.ax_graph.set_title('Emotion')
         self.ax_graph.set_xticks(y_pos)
         self.ax_graph.set_xticklabels(emotions)
         self.ax_graph.set_yticks(np.arange(0, 110, 10))
 
-        self.canvas_bar_video = FigureCanvasTkAgg(self.fig_bar, self.video_frame)
+        self.canvas_bar_video = FigureCanvasTkAgg(
+            self.fig_bar, self.video_frame)
         self.canvas_bar_average = FigureCanvasTkAgg(self.fig_bar, self.fr_bar)
-        self.toolbar_avaerage = NavigationToolbar2Tk(self.canvas_bar_average, self.fr_bar)
-        # self.toolbar_avaerage.update()
+        self.bar_average_toolbar = NavigationToolbar2Tk(
+            self.canvas_bar_average, self.fr_bar)
+        # self.bar_average_toolbar.update()
 
-        #creating and setting up th line graph
-        self.fig_line = Figure(figsize=(24,24))
+        # creating and setting up th line graph
+        self.fig_line = Figure(figsize=(24, 24))
         self.line_graphs = {e: None for e in emotions}
         i = 0
         for e in self.line_graphs:
             i += 1
             self.line_graphs[e] = self.fig_line.add_subplot(330 + i)
-            self.fig_line.subplots_adjust(left=0.10, bottom=-0.10)    
+            self.fig_line.subplots_adjust(left=0.10, bottom=-0.10)
         self.canvas_line = FigureCanvasTkAgg(self.fig_line, self.fr_line)
-        self.line_toolbar = NavigationToolbar2Tk(self.canvas_line, self.fr_line)
-        
-        #initializing data emotions dictionary for data to be used in drawing the line graph for each emotion
+        self.line_toolbar = NavigationToolbar2Tk(
+            self.canvas_line, self.fr_line)
+
+        # initializing data emotions dictionary for data to be used in drawing the line graph for each emotion
         self.data_emotions = None
-        
+
         # pregress bar for loading the video and analyzing it
         self.progress_bar = ttk.Progressbar(
             self.video_frame, orient='horizontal', length=270, mode='determinate')
@@ -173,25 +187,24 @@ class EmotionRecognitionPage(tk.Frame):
         # Check if clicked button is Start convert button to Stop
         if self.start_stop_btn.cget("text") == "Start":
             self.forget_all()
+            self.remove_all_data()
             self.start_stop_btn.config(text="Stop")
             self.state_analyzing.config(text="Analyzing")
-            self.average_emotion = np.zeros(len(emotions))
-            self.numb_of_frames = 0
-            self.data_emotions = {emotion: [] for emotion in emotions}
+
             self.video_frame.pack()
-            
+
             if video_path == 0:
                 self.video_label.pack(pady=10, padx=10, side="left")
                 self.canvas_bar_video.get_tk_widget().pack(
                     pady=10, padx=10, side="right", fill="both", expand="1")
-        
+
             self.start_video()
 
-        #chack if clicked button is Stop convert it to Start
+        # chack if clicked button is Stop convert it to Start
         elif self.start_stop_btn.cget("text") == "Stop":
             self.video.__del__()
             self.start_stop_btn.config(text="Start")
-                
+
             self.video_label.forget()
             self.canvas_bar_video.get_tk_widget().forget()
             self.canvas_line.get_tk_widget().forget()
@@ -199,7 +212,7 @@ class EmotionRecognitionPage(tk.Frame):
             self.show_average()
 
     def show_average(self):
-        #add number of faces to the state
+        # add number of faces to the state
         result = "Analyzing results\nNo. of faces:"
         if self.numb_of_faces:
             self.numb_of_faces /= self.numb_of_frames
@@ -209,13 +222,18 @@ class EmotionRecognitionPage(tk.Frame):
             self.state_analyzing.config(text=f"{result} 0")
 
         # Add notebook tabs
+        self.np_graphs.add(self.fr_pie, text="pie chart")
         self.np_graphs.add(self.fr_bar, text="bar graph")
         self.np_graphs.add(self.fr_line, text="line graph")
+
+        self.canvas_pie.get_tk_widget().pack()
         self.canvas_bar_average.get_tk_widget().pack(pady=10, padx=10)
         self.canvas_line.get_tk_widget().pack()
         self.np_graphs.pack()
 
         self.average_emotion /= self.numb_of_frames
+
+        self.draw_pie_chart(self.average_emotion)
         self.draw_bar_chart(self.average_emotion, self.canvas_bar_average)
         self.draw_line_chart()
 
@@ -232,7 +250,8 @@ class EmotionRecognitionPage(tk.Frame):
         # read the video from the streaming camera and analyze it
         ret, frame = self.video.get_frame()
         if ret:
-            frame, emotion_predictions, numb_of_faces = get_emotion_predictions(frame)
+            frame, emotion_predictions, numb_of_faces = get_emotion_predictions(
+                frame)
 
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             image = ImageTk.PhotoImage(
@@ -256,7 +275,8 @@ class EmotionRecognitionPage(tk.Frame):
         # read video and analyze it
         ret, frame = self.video.get_frame()
         if ret:
-            frame, emotion_predictions, numb_of_faces = get_emotion_predictions(frame)
+            frame, emotion_predictions, numb_of_faces = get_emotion_predictions(
+                frame)
             if(emotion_predictions.all(0)):
                 self.numb_of_faces += numb_of_faces
                 self.add_predictions_data(emotion_predictions)
@@ -266,17 +286,23 @@ class EmotionRecognitionPage(tk.Frame):
             # remove progress barstop loading and
             self.progress_bar.forget()
             self.start_stop()
-    
+
     def add_predictions_data(self, emotion_predictions):
         self.average_emotion += emotion_predictions
         self.numb_of_frames += 1
         for data_emotion, prediction in zip(self.data_emotions, emotion_predictions):
             self.data_emotions[data_emotion].append(prediction * 100)
 
+    def draw_pie_chart(self, emotion_predictions):
+
+        self.ax_pie.clear()
+        self.ax_pie.pie(emotion_predictions*100, labels=emotions,
+                        autopct='%1.1f%%', shadow=True)
+        self.canvas_pie.draw()
+
     def draw_bar_chart(self, emotion_predictions, canvas_bar):
 
-        emotion_predictions *= 100
-        for rect, h in zip(self.bars, emotion_predictions):
+        for rect, h in zip(self.bars, emotion_predictions*100):
             rect.set_height(h)
         canvas_bar.draw()
 
@@ -285,16 +311,19 @@ class EmotionRecognitionPage(tk.Frame):
 
         # Lopp throught the data prediction to normalize it
         for data_emotion in self.data_emotions:
-            self.data_emotions[data_emotion] = np.array_split(self.data_emotions[data_emotion], 100)
+            self.data_emotions[data_emotion] = np.array_split(
+                self.data_emotions[data_emotion], 100)
             for index, emotion_prediction in enumerate(self.data_emotions[data_emotion]):
                 if emotion_prediction.any():
-                    self.data_emotions[data_emotion][index] = emotion_prediction.mean()
+                    self.data_emotions[data_emotion][index] = emotion_prediction.mean(
+                    )
                 else:
                     self.data_emotions[data_emotion][index] = np.nan
 
         for e in self.line_graphs:
             self.line_graphs[e].clear()
-            self.line_graphs[e].plot(np.arange(0,100),self.data_emotions[e], linewidth=2)
+            self.line_graphs[e].plot(
+                np.arange(0, 100), self.data_emotions[e], linewidth=2)
 
             # Set reange of ticks
             self.line_graphs[e].set_yticks(np.arange(0, 110, 10))
@@ -306,13 +335,11 @@ class EmotionRecognitionPage(tk.Frame):
 
             # Ylabel
             self.line_graphs[e].set_ylabel('Percentage', fontsize=14)
-            
+
             self.line_graphs[e].set_title(e, fontsize=18)
 
             self.canvas_line.draw()
-        
-        
-   
+
     def back_to_start_page(self, controller):
         if self.video:
             self.video.__del__()
@@ -323,12 +350,21 @@ class EmotionRecognitionPage(tk.Frame):
 
     def forget_all(self):
         self.canvas_bar_video.get_tk_widget().forget()
+
+        self.canvas_pie.get_tk_widget().forget()
         self.canvas_bar_average.get_tk_widget().forget()
         self.canvas_line.get_tk_widget().forget()
         if self.np_graphs.tabs():
+            self.np_graphs.forget(tab_id=self.fr_pie)
             self.np_graphs.forget(tab_id=self.fr_bar)
             self.np_graphs.forget(tab_id=self.fr_line)
         self.video_label.forget()
+
+    def remove_all_data(self):
+        self.average_emotion = np.zeros(len(emotions))
+        self.numb_of_frames = 0
+        self.numb_of_faces = 0
+        self.data_emotions = {emotion: [] for emotion in emotions}
 
 
 class VideoCapture:
