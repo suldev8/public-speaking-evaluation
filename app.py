@@ -18,7 +18,7 @@ LARGE_FONT = ("", 12)
 
 video_path = 0
 
-emotions = ('angry', 'fear', 'happy', 'sad', 'surprise', 'neutral')
+emotions = ('Angry', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral')
 style.use('fivethirtyeight')
 
 y_pos = np.arange(len(emotions))
