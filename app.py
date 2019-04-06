@@ -131,10 +131,14 @@ class EmotionRecognitionPage(tk.Frame):
         self.fr_pie = ttk.Frame(self.np_graphs)
         self.fr_line = ttk.Frame(self.np_graphs)
 
+        
+        # Colors list for the graphs
+        self.colors = ['#70a1d7', '#f47c7c',
+                       '#a1de93', '#f8b739', '#3bb4c1', '#bb8fa9']
+        
         # Creating and settig up the Pie chart
         self.fig_pie = Figure(figsize=(8, 8))
         self.ax_pie = self.fig_pie.add_subplot(111)
-        self.colors = ['#70a1d7', '#f47c7c', '#a1de93', '#f7f48b', '#3bb4c1', '#bb8fa9' ]
 
         self.canvas_pie = FigureCanvasTkAgg(self.fig_pie, self.fr_pie)
         self.pie_toolbar = NavigationToolbar2Tk(self.canvas_pie, self.fr_pie)
@@ -143,8 +147,11 @@ class EmotionRecognitionPage(tk.Frame):
         self.fig_bar = Figure(figsize=(8, 8))
         self.ax_graph = self.fig_bar.add_subplot(111)
         self.fig_bar.subplots_adjust(left=0.10)
-        self.bars = self.ax_graph.bar(y_pos, np.zeros(
-            len(emotions)), align='center', alpha=0.5)
+        self.bars = self.ax_graph.bar(y_pos,
+                                      np.zeros(len(emotions)),
+                                      align='center',
+                                      alpha=0.8,
+                                      color=self.colors)
         self.ax_graph.set_ylabel('Percentage')
         self.ax_graph.set_title('Emotion')
         self.ax_graph.set_xticks(y_pos)
