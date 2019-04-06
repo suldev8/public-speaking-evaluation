@@ -134,8 +134,7 @@ class EmotionRecognitionPage(tk.Frame):
         # Creating and settig up the Pie chart
         self.fig_pie = Figure(figsize=(8, 8))
         self.ax_pie = self.fig_pie.add_subplot(111)
-        self.ax_pie.pie(y_pos, labels=emotions, shadow=True)
-        self.ax_pie.clear()
+        self.colors = ['#70a1d7', '#f47c7c', '#a1de93', '#f7f48b', '#3bb4c1', '#bb8fa9' ]
 
         self.canvas_pie = FigureCanvasTkAgg(self.fig_pie, self.fr_pie)
         self.pie_toolbar = NavigationToolbar2Tk(self.canvas_pie, self.fr_pie)
@@ -296,8 +295,10 @@ class EmotionRecognitionPage(tk.Frame):
     def draw_pie_chart(self, emotion_predictions):
 
         self.ax_pie.clear()
-        self.ax_pie.pie(emotion_predictions*100, labels=emotions,
-                        autopct='%1.1f%%', shadow=True)
+        self.ax_pie.pie(emotion_predictions*100,
+                        labels=emotions,
+                        autopct='%1.1f%%',
+                        colors=self.colors)
         self.canvas_pie.draw()
 
     def draw_bar_chart(self, emotion_predictions, canvas_bar):
