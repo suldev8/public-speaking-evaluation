@@ -33,7 +33,6 @@ def get_emotion_predictions(frame):
     num_of_faces = 0
     num_of_emotions = 6
     emotions_predictions = np.zeros(num_of_emotions)
-    #print(range(0, detections.shape[2]))
     for i in range(0, detections.shape[2]):
 
         # get the confidence from face detection
@@ -41,7 +40,7 @@ def get_emotion_predictions(frame):
         # skip weak face detection
         if confidence < minimum_face_confidence:
             continue
-        num_of_faces += 1
+        
         # compute the (x, y)-coordinates of the bounding box for the
         # object
         box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
@@ -57,6 +56,10 @@ def get_emotion_predictions(frame):
                     cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
 
         face = frame[startY:endY, startX:endX]
+        
+        if(not face.size):
+            continue
+        num_of_faces += 1
         face = cv2.resize(face, (48, 48))
         face = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
 
