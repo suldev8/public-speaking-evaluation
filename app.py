@@ -358,8 +358,10 @@ class EmotionRecognitionPage(tk.Frame):
 
     def forget_all(self):
         self.canvas_bar_video.get_tk_widget().forget()
-
         self.canvas_pie.get_tk_widget().forget()
+
+        self.progress_bar.forget()
+
         self.canvas_bar_average.get_tk_widget().forget()
         self.canvas_line.get_tk_widget().forget()
         if self.np_graphs.tabs():
