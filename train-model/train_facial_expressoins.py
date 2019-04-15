@@ -9,21 +9,13 @@ from keras.preprocessing import image
 from keras.preprocessing.image import ImageDataGenerator
 
 import numpy as np
-#import matplotlib.pyplot as plt
 
-# ------------------------------
-# cpu - gpu configuration
-config = tf.ConfigProto(
-    device_count={'GPU': 0, 'CPU': 56})  # max: 1 gpu, 56 cpu
-sess = tf.Session(config=config)
-keras.backend.set_session(sess)
-# ------------------------------
-# variables
-num_classes = 7  # angry, disgust, fear, happy, sad, surprise, neutral
+# Global variables
+num_classes = 6
 batch_size = 256
 epochs = 5
 
-with open("dataset/balanced_fer2013.csv") as f:
+with open("dataset/fer2013.csv") as f:
     content = f.readlines()
 
 lines = np.array(content)
@@ -32,11 +24,10 @@ num_of_instances = lines.size
 print("number of instances: ", num_of_instances)
 print("instance length: ", len(lines[1].split(",")[1].split(" ")))
 
-# ------------------------------
+
 # initialize trainset and test set
 x_train, y_train, x_test, y_test = [], [], [], []
 
-# ------------------------------
 # transfer train and test set data
 for i in range(1, num_of_instances):
     try:
@@ -57,7 +48,6 @@ for i in range(1, num_of_instances):
     except:
         print("", end="")
 
-# ------------------------------
 # data transformation for train and test sets
 x_train = np.array(x_train, 'float32')
 y_train = np.array(y_train, 'float32')
@@ -101,17 +91,16 @@ model.add(Dense(1024, activation='relu'))
 model.add(Dropout(0.2))
 
 model.add(Dense(num_classes, activation='softmax'))
-# ------------------------------
+
 # batch process
 gen = ImageDataGenerator()
 train_generator = gen.flow(x_train, y_train, batch_size=batch_size)
 
-# ------------------------------
 
 model.compile(loss='categorical_crossentropy', optimizer=keras.optimizers.Adam(), metrics=['accuracy'])
 
 
-#H = model.fit_generator(x_train, y_train, epochs=epochs)  # train for all trainset
-H = model.fit_generator(train_generator, steps_per_epoch=batch_size, epochs=epochs) #train for randomly selected one
+
+model.fit_generator(train_generator, steps_per_epoch=batch_size, epochs=epochs) #train for randomly selected one
 
 model.save('../models/facial-expression/facial-expression-model.h5')
