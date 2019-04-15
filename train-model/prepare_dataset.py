@@ -2,7 +2,7 @@ import pandas as pd
 import itertools
 
 read_path = "fer2013.csv"
-write_path = "output/fer2013.csv"
+write_path = "output/balanced-fer2013.csv"
 
 def reading(path):
     DataFrame_ = pd.read_csv(path)
