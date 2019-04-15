@@ -15,7 +15,7 @@ num_classes = 6
 batch_size = 256
 epochs = 5
 
-with open("dataset/fer2013.csv") as f:
+with open("output/balanced-fer2013.csv") as f:
     content = f.readlines()
 
 lines = np.array(content)
